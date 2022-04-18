@@ -1,3 +1,5 @@
+Live demo: https://idanarye.github.io/testing-physics-based-movement/
+
 # License
 
 This project is licensed under [CC0 1.0 Universal](LICENSE) except some content of `assets` and the Bevy icons in the `build` directory (see [Credits](credits/CREDITS.md)). Go crazy and feel free to show me whatever you build with this ([@nikl_me][nikl-twitter]).
