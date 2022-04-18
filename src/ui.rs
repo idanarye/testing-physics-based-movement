@@ -48,6 +48,11 @@ fn ui_system(
                 1.0..=100.0,
             ),
             (
+                "Impulse Exponent",
+                &mut player_movement_settings.impulse_exponent,
+                1.0..=10.0,
+            ),
+            (
                 "Impulse Coefficient",
                 &mut player_movement_settings.impulse_coefficient,
                 1.0..=100_000.0,
@@ -68,13 +73,13 @@ fn ui_system(
                 1.0..=100.0,
             ),
             (
-                "Uphill Move Efficiency",
-                &mut player_movement_settings.uphill_move_efficiency,
+                "Uphill Move Exponent",
+                &mut player_movement_settings.uphill_move_exponent,
                 0.01..=200.0,
             ),
             (
-                "Downhill Stop Efficiency",
-                &mut player_movement_settings.downhill_stop_efficiency,
+                "Downhill Stop Exponent",
+                &mut player_movement_settings.downhill_stop_exponent,
                 0.01..=200.0,
             ),
         ] {

@@ -145,7 +145,10 @@ fn control_player(
         let impulse = if 1.0 < impulse.abs() {
             impulse.signum()
         } else {
-            impulse.signum() * impulse.powi(4)
+            impulse.signum()
+                * impulse
+                    .abs()
+                    .powf(player_movement_settings.impulse_exponent)
         };
         let mut impulse = movement_vector
             * time.delta().as_secs_f32()
@@ -154,9 +157,9 @@ fn control_player(
         let uphill = impulse.normalize().dot(&vector![0.0, 1.0]);
         if 0.01 <= uphill {
             let efficiency = if target_speed.signum() as i32 == current_speed.signum() as i32 {
-                player_movement_settings.uphill_move_efficiency
+                player_movement_settings.uphill_move_exponent
             } else {
-                player_movement_settings.downhill_stop_efficiency
+                player_movement_settings.downhill_stop_exponent
             };
             impulse *= 1.0 - uphill.powf(efficiency);
         }
