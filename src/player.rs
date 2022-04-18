@@ -113,8 +113,8 @@ fn control_player(
                 let after_depletion = before_depletion - to_deplete;
                 player_control.jump_potential = after_depletion;
                 let integrate = |x: f32| {
-                    let degree = 0.75;
-                    x.powf(degree) / degree
+                    let exponent = player_movement_settings.jump_potential_exponent + 1.0;
+                    x.powf(exponent) / exponent
                 };
                 let area_under_graph =
                     (integrate(before_depletion) - integrate(after_depletion)) / integrate(1.0);

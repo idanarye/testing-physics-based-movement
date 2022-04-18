@@ -68,6 +68,11 @@ fn ui_system(
                 2.0..=20.0,
             ),
             (
+                "Jump Potential Exponent",
+                &mut player_movement_settings.jump_potential_exponent,
+                -0.9..=1.0,
+            ),
+            (
                 "Stood On Time Coefficient",
                 &mut player_movement_settings.stood_on_time_coefficient,
                 1.0..=100.0,
