@@ -26,11 +26,12 @@ fn setup_player(mut commands: Commands) {
                 inv_principal_inertia_sqrt: 0.0,
             },
             ..Default::default()
-        }.into(),
+        }
+        .into(),
         ..Default::default()
     });
     cmd.insert_bundle(ColliderBundle {
-        shape: ColliderShape::cuboid(0.5, 2.0).into(),
+        shape: ColliderShape::cuboid(0.25, 1.0).into(),
         ..Default::default()
     });
     cmd.insert(ColliderPositionSync::Discrete);
@@ -43,7 +44,7 @@ fn setup_player(mut commands: Commands) {
 }
 
 #[derive(Component)]
-struct PlayerControl {
+pub struct PlayerControl {
     jump_potential: f32,
     last_stood_on: Vector2<f32>,
     stood_on_potential: f32,
@@ -69,13 +70,7 @@ fn control_player(
     if input.pressed(KeyCode::Right) {
         target_speed += 1.0;
     }
-    for (
-        player_entity,
-        mut velocity,
-        mass_props,
-        mut player_control,
-    ) in query.iter_mut()
-    {
+    for (player_entity, mut velocity, mass_props, mut player_control) in query.iter_mut() {
         let standing_on = narrow_phase
             .contacts_with(player_entity.handle())
             .filter(|contact| contact.has_any_active_contact)
@@ -125,7 +120,9 @@ fn control_player(
                     (integrate(before_depletion) - integrate(after_depletion)) / integrate(1.0);
                 velocity.apply_impulse(
                     mass_props,
-                    vector![0.0, 1.0] * player_movement_settings.jump_power_coefficient * area_under_graph,
+                    vector![0.0, 1.0]
+                        * player_movement_settings.jump_power_coefficient
+                        * area_under_graph,
                 );
             }
         }
@@ -136,7 +133,8 @@ fn control_player(
 
         let movement_vector = Isometry::rotation(-std::f32::consts::FRAC_PI_2) * up_now;
 
-        let current_speed = velocity.linvel.dot(&movement_vector) / player_movement_settings.max_speed;
+        let current_speed =
+            velocity.linvel.dot(&movement_vector) / player_movement_settings.max_speed;
 
         if (0.0 < target_speed && target_speed <= current_speed)
             || (target_speed < 0.0 && current_speed <= target_speed)
@@ -158,7 +156,7 @@ fn control_player(
             let efficiency = if target_speed.signum() as i32 == current_speed.signum() as i32 {
                 player_movement_settings.uphill_move_efficiency
             } else {
-                player_movement_settings.uphill_stop_efficiency
+                player_movement_settings.downhill_stop_efficiency
             };
             impulse *= 1.0 - uphill.powf(efficiency);
         }
