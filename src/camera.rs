@@ -13,6 +13,7 @@ fn setup_camera(mut commands: Commands) {
     let zoom = 20.0;
     camera.transform.scale.x /= zoom;
     camera.transform.scale.y /= zoom;
-    camera.transform.translation.x += 10.0;
+    camera.transform.translation.x += 7.5;
+    camera.transform.translation.y += 9.0;
     commands.spawn_bundle(camera);
 }
