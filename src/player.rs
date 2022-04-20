@@ -37,7 +37,7 @@ fn setup_player(mut commands: Commands) {
     cmd.insert(ColliderPositionSync::Discrete);
     cmd.insert(ColliderDebugRender::with_id(2));
     cmd.insert(PlayerControl {
-        jump_potential: 0.0,
+        mid_jump: false,
         last_stood_on: vector![0.0, 1.0],
         stood_on_potential: 0.0,
     });
@@ -45,7 +45,7 @@ fn setup_player(mut commands: Commands) {
 
 #[derive(Component)]
 pub struct PlayerControl {
-    jump_potential: f32,
+    mid_jump: bool,
     last_stood_on: Vector2<f32>,
     stood_on_potential: f32,
 }
@@ -87,43 +87,63 @@ fn control_player(
                 })
             })
             .max_by_key(|normal| float_ord::FloatOrd(normal.dot(&vector![0.0, 1.0])));
-        if let Some(standing_on) = standing_on {
-            let refill_percentage = standing_on.dot(&vector![0.0, 1.0]);
-            if player_control.jump_potential < refill_percentage {
-                player_control.jump_potential = refill_percentage;
-            }
 
-            player_control.last_stood_on = standing_on;
-            player_control.stood_on_potential = 1.0;
-        } else {
-            if !is_jumping {
-                player_control.jump_potential = 0.0;
-            }
+        enum JumpStatus {
+            CanJump,
+            InitiateJump,
+            GoingUp,
+            StoppingUp,
+            GoingDown,
+        }
 
+        let jump_status = (|| {
+            if let Some(standing_on) = standing_on {
+                player_control.last_stood_on = standing_on;
+                player_control.stood_on_potential = 1.0;
+                if 0.0 < standing_on.dot(&vector![0.0, 1.0]) {
+                    if is_jumping {
+                        return JumpStatus::InitiateJump;
+                    }
+                    return JumpStatus::CanJump;
+                }
+            }
             player_control.stood_on_potential = (player_control.stood_on_potential
                 - time.delta().as_secs_f32() * player_movement_settings.stood_on_time_coefficient)
                 .max(0.0);
-        }
-        if is_jumping {
-            let to_deplete = player_control
-                .jump_potential
-                .min(time.delta().as_secs_f32() * player_movement_settings.jump_time_coefficient);
-            if 0.0 < to_deplete {
-                let before_depletion = player_control.jump_potential;
-                let after_depletion = before_depletion - to_deplete;
-                player_control.jump_potential = after_depletion;
-                let integrate = |x: f32| {
-                    let exponent = player_movement_settings.jump_potential_exponent + 1.0;
-                    x.powf(exponent) / exponent
-                };
-                let area_under_graph =
-                    (integrate(before_depletion) - integrate(after_depletion)) / integrate(1.0);
+
+            if 0.0 <= velocity.linvel.y {
+                if is_jumping && player_control.mid_jump {
+                    JumpStatus::GoingUp
+                } else {
+                    JumpStatus::StoppingUp
+                }
+            } else {
+                JumpStatus::GoingDown
+            }
+        })();
+
+        match jump_status {
+            JumpStatus::CanJump => {
+                player_control.mid_jump = false;
+            }
+            JumpStatus::InitiateJump => {
+                player_control.mid_jump = true;
                 velocity.apply_impulse(
                     mass_props,
-                    vector![0.0, 1.0]
-                        * player_movement_settings.jump_power_coefficient
-                        * area_under_graph,
+                    vector![0.0, 1.0] * player_movement_settings.jump_power_coefficient,
                 );
+            }
+            JumpStatus::GoingUp => {
+                player_control.mid_jump = true;
+            }
+            JumpStatus::StoppingUp => {
+                player_control.mid_jump = false;
+                velocity.linvel.y *= player_movement_settings
+                    .jump_brake_coefficient
+                    .powf(time.delta().as_secs_f32());
+            }
+            JumpStatus::GoingDown => {
+                player_control.mid_jump = false;
             }
         }
 
@@ -159,7 +179,7 @@ fn control_player(
             let efficiency = if target_speed.signum() as i32 == current_speed.signum() as i32 {
                 player_movement_settings.uphill_move_exponent
             } else {
-                player_movement_settings.downhill_stop_exponent
+                player_movement_settings.downhill_brake_exponent
             };
             impulse *= 1.0 - uphill.powf(efficiency);
         }

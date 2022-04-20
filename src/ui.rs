@@ -63,14 +63,9 @@ fn ui_system(
                 1.0..=2000.0,
             ),
             (
-                "Jump Time Coefficient",
-                &mut player_movement_settings.jump_time_coefficient,
-                2.0..=20.0,
-            ),
-            (
-                "Jump Potential Exponent",
-                &mut player_movement_settings.jump_potential_exponent,
-                -0.9..=1.0,
+                "Jump Brake Coefficient",
+                &mut player_movement_settings.jump_brake_coefficient,
+                0.0..=0.1,
             ),
             (
                 "Stood On Time Coefficient",
@@ -83,8 +78,8 @@ fn ui_system(
                 0.01..=200.0,
             ),
             (
-                "Downhill Stop Exponent",
-                &mut player_movement_settings.downhill_stop_exponent,
+                "Downhill Brake Exponent",
+                &mut player_movement_settings.downhill_brake_exponent,
                 0.01..=200.0,
             ),
         ] {

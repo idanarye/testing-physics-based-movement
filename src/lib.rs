@@ -25,11 +25,10 @@ impl Plugin for GamePlugin {
             impulse_exponent: 4.0,
             impulse_coefficient: 40_000.0,
             jump_power_coefficient: 1000.0,
-            jump_time_coefficient: 7.5,
-            jump_potential_exponent: -0.25,
+            jump_brake_coefficient: 0.02,
             stood_on_time_coefficient: 10.0,
             uphill_move_exponent: 0.5,
-            downhill_stop_exponent: 1.0,
+            downhill_brake_exponent: 1.0,
         });
     }
 }
@@ -39,9 +38,8 @@ pub struct PlayerMovementSettings {
     pub impulse_exponent: f32,
     pub impulse_coefficient: f32,
     pub jump_power_coefficient: f32,
-    pub jump_time_coefficient: f32,
-    pub jump_potential_exponent: f32,
+    pub jump_brake_coefficient: f32,
     pub stood_on_time_coefficient: f32,
     pub uphill_move_exponent: f32,
-    pub downhill_stop_exponent: f32,
+    pub downhill_brake_exponent: f32,
 }
