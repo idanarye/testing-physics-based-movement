@@ -1,3 +1,5 @@
+use std::ops::RangeInclusive;
+
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContext};
 use bevy_rapier2d::physics::RapierConfiguration;
@@ -34,57 +36,88 @@ fn ui_system(
         let mut mass = player_mass_properties.mass();
 
         let player_movement_settings = &mut *player_movement_settings;
-        for (caption, property, range) in [
-            ("Gravity", &mut gravity, 0.1..=20.0),
-            ("Mass", &mut mass, 0.1..=200.0),
-            (
-                "Friction",
-                &mut player_collider_material.friction,
-                0.0..=10.0,
-            ),
-            (
-                "Max Speed",
-                &mut player_movement_settings.max_speed,
-                1.0..=100.0,
-            ),
-            (
-                "Impulse Exponent",
-                &mut player_movement_settings.impulse_exponent,
-                1.0..=10.0,
-            ),
-            (
-                "Impulse Coefficient",
-                &mut player_movement_settings.impulse_coefficient,
-                1.0..=100_000.0,
-            ),
-            (
-                "Jump Power Coefficient",
-                &mut player_movement_settings.jump_power_coefficient,
-                1.0..=2000.0,
-            ),
-            (
+
+        fn mkslider<'a>(
+            caption: &'a str,
+            property: &'a mut f32,
+            range: RangeInclusive<f32>,
+        ) -> egui::Slider<'a> {
+            egui::Slider::new(property, range).text(caption)
+        }
+
+        ui.add(mkslider("Gravity", &mut gravity, 0.1..=20.0));
+        ui.add(mkslider("Mass", &mut mass, 0.1..=200.0));
+        ui.add(mkslider(
+            "Friction",
+            &mut player_collider_material.friction,
+            0.0..=10.0,
+        ));
+        ui.add(mkslider(
+            "Max Speed",
+            &mut player_movement_settings.max_speed,
+            1.0..=100.0,
+        ));
+        ui.add(mkslider(
+            "Impulse Exponent",
+            &mut player_movement_settings.impulse_exponent,
+            1.0..=10.0,
+        ));
+        ui.add(mkslider(
+            "Impulse Coefficient",
+            &mut player_movement_settings.impulse_coefficient,
+            1.0..=100_000.0,
+        ));
+        ui.add(mkslider(
+            "Jump Power Coefficient",
+            &mut player_movement_settings.jump_power_coefficient,
+            1.0..=2000.0,
+        ));
+        ui.add(
+            mkslider(
                 "Jump Brake Coefficient",
                 &mut player_movement_settings.jump_brake_coefficient,
                 0.0..=0.1,
-            ),
-            (
-                "Stood On Time Coefficient",
-                &mut player_movement_settings.stood_on_time_coefficient,
-                1.0..=100.0,
-            ),
-            (
-                "Uphill Move Exponent",
-                &mut player_movement_settings.uphill_move_exponent,
-                0.01..=200.0,
-            ),
-            (
-                "Downhill Brake Exponent",
-                &mut player_movement_settings.downhill_brake_exponent,
-                0.01..=200.0,
-            ),
-        ] {
-            ui.add(egui::Slider::new(property, range).text(caption));
-        }
+            )
+            .logarithmic(true),
+        );
+        ui.add(mkslider(
+            "Start Fall Before Peak",
+            &mut player_movement_settings.start_fall_before_peak,
+            0.0..=40.0,
+        ));
+        ui.add(mkslider(
+            "Start of Fall Range",
+            &mut player_movement_settings.start_of_fall_range,
+            0.0..=40.0,
+        ));
+        ui.add(mkslider(
+            "Start of Fall Gravity Boost",
+            &mut player_movement_settings.start_of_fall_gravity_boost,
+            0.0..=100.0,
+        ));
+        ui.add(
+            mkslider(
+                "Fall Boost Coefficient",
+                &mut player_movement_settings.fall_boost_coefficient,
+                1.0..=2.0,
+            )
+            .logarithmic(true),
+        );
+        ui.add(mkslider(
+            "Stood On Time Coefficient",
+            &mut player_movement_settings.stood_on_time_coefficient,
+            1.0..=100.0,
+        ));
+        ui.add(mkslider(
+            "Uphill Move Exponent",
+            &mut player_movement_settings.uphill_move_exponent,
+            0.01..=200.0,
+        ));
+        ui.add(mkslider(
+            "Downhill Brake Exponent",
+            &mut player_movement_settings.downhill_brake_exponent,
+            0.01..=200.0,
+        ));
 
         rapier_configuration.gravity.y = -gravity;
         player_mass_properties.local_mprops.set_mass(mass, true);

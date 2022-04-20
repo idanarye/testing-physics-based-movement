@@ -141,8 +141,21 @@ fn control_player(
                 velocity.linvel.y *= player_movement_settings
                     .jump_brake_coefficient
                     .powf(time.delta().as_secs_f32());
+                if velocity.linvel.y < player_movement_settings.start_fall_before_peak {
+                    velocity.linvel.y -= player_movement_settings.start_of_fall_gravity_boost
+                        * time.delta().as_secs_f32();
+                }
             }
             JumpStatus::GoingDown => {
+                if -player_movement_settings.start_of_fall_range < velocity.linvel.y {
+                    // reminder: linvel.y is negative here
+                    velocity.linvel.y -= player_movement_settings.start_of_fall_gravity_boost
+                        * time.delta().as_secs_f32();
+                } else {
+                    velocity.linvel.y *= player_movement_settings
+                        .fall_boost_coefficient
+                        .powf(time.delta().as_secs_f32());
+                }
                 player_control.mid_jump = false;
             }
         }
